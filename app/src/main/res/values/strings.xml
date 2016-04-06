@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+
+    <string name="most_popular">Popular Movies</string>
+    <string name="top_rated">Top Rated Movies</string>
+    <string name="rating_string">%.1f/10</string>
+</resources>

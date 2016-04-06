@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <integer name="default_grid_columns">2</integer>
+    <integer name="default_image_width">185</integer>
+    <integer name="default_image_height">277</integer>
+
+
+</resources>

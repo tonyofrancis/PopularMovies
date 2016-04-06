@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:background="@color/offWhite"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/movie_poster_image_view"
+            android:layout_marginRight="10dp"
+            android:layout_width="@dimen/poster_width"
+            android:layout_height="@dimen/poster_height"/>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/movie_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Movie Title"
+                style="@style/MovieTitle"/>
+
+            <TextView
+                android:id="@+id/movie_year"
+                android:textColor="@android:color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="2015"/>
+
+            <TextView
+                android:textStyle="bold"
+                android:layout_marginTop="5dp"
+                android:id="@+id/movie_rating"
+                android:textColor="@color/colorAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="8/10"/>
+
+            <TextView
+                android:layout_marginTop="20dp"
+                android:textColor="@android:color/black"
+                android:id="@+id/movie_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Movie description"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
