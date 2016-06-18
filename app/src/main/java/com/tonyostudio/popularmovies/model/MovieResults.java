@@ -6,9 +6,9 @@ import java.util.List;
  * Created by tonyofrancis on 3/22/16.
  */
 public class MovieResults {
+
     private int page;
     private List<Movie> results;
-    private int total_results;
     private int total_pages;
 
     public int getPage() {
@@ -25,14 +25,6 @@ public class MovieResults {
 
     public void setResults(List<Movie> results) {
         this.results = results;
-    }
-
-    public int getTotal_results() {
-        return total_results;
-    }
-
-    public void setTotal_results(int total_results) {
-        this.total_results = total_results;
     }
 
     public int getTotal_pages() {

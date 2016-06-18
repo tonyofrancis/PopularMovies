@@ -1,7 +1,7 @@
 package com.tonyostudio.popularmovies.adapter;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
+import android.content.ContextWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +25,7 @@ import java.util.List;
  *
  * The @param Callback variable has to also be an instance of Context. It just makes sense
  */
-public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieItemViewHolder> {
+public final class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieItemViewHolder> {
 
     private List<Movie> mDataSet;
     private Context mContext;
@@ -33,19 +33,16 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
     public MovieListAdapter(Context context) {
         mContext = context;
         mDataSet = new ArrayList<>();
+
     }
 
     @Override
     public MovieItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-        View view = LayoutInflater.from(mContext).inflate(R.layout.movie_poster_item,parent,false);
-
-        return new MovieItemViewHolder(view);
+        return new MovieItemViewHolder(LayoutInflater.from(mContext).inflate(R.layout.movie_poster_item,parent,false));
     }
 
     @Override
     public void onBindViewHolder(MovieItemViewHolder holder, int position) {
-
         holder.bindMovieItem(mDataSet.get(position));
     }
 
@@ -55,7 +52,7 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
     }
 
     /*Method used to swap the DataSet*/
-    public void swapDataSet(@Nullable List<Movie> dataSet) {
+    public void swapDataSet(List<Movie> dataSet) {
 
         if (dataSet == null) {
             mDataSet = new ArrayList<>();
@@ -66,11 +63,28 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
         notifyDataSetChanged();
     }
 
-    /*ViewHolder class used to populate RecyclerView*/
-    public class MovieItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public void mergeDataSet(List<Movie> dataSet) {
 
-        private ImageView mImageView;
-        private int mMovieId;
+        if (dataSet == null) {
+            return;
+        }
+
+        final int endPoint = mDataSet.size();
+
+        mDataSet.addAll(dataSet);
+
+        notifyItemRangeChanged(endPoint,mDataSet.size());
+    }
+
+    public List<Movie> getDataSet() {
+        return mDataSet;
+    }
+
+    /*ViewHolder class used to populate RecyclerView*/
+    public static class MovieItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+        final private ImageView mImageView;
+        private Movie mMovie;
 
         public MovieItemViewHolder(View itemView) {
             super(itemView);
@@ -80,31 +94,19 @@ public class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.Movi
         }
 
         public void bindMovieItem(Movie movie) {
+             mMovie= movie;
 
-            mMovieId = movie.getId();
-
-            /*Fetch Movie Poster based on device resolution*/
-            boolean highRes;
-
-            int imageWidth = mContext.getResources().getInteger(R.integer.default_image_width);
-
-            if (imageWidth == MovieService.POSTER_IMAGE_RES_SIZE_780) {
-                highRes = true;
-            }else {
-                highRes = false;
-            }
-
-            Picasso.with(mContext)
-                    .load(MovieService.getImageUrlString(movie.getPoster_path(),highRes))
+            Picasso.with(mImageView.getContext())
+                    .load(MovieService.getImageUrlString(movie.getPoster_path()))
                     .placeholder(R.drawable.poster_placeholder)
                     .into(mImageView);
-
         }
 
         @Override
         public void onClick(View v) {
-            ((MovieListBaseFragment.Callback)mContext).onMovieItemSelected(mMovieId);
+
+            ((MovieListBaseFragment.Callback)((ContextWrapper)v.getContext())
+                    .getBaseContext()).onMovieItemSelected(mMovie);
         }
     }
-
 }

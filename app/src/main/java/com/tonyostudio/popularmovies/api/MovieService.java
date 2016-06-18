@@ -1,17 +1,27 @@
 package com.tonyostudio.popularmovies.api;
 
+import android.app.Application;
+import android.content.Context;
+import android.net.ConnectivityManager;
 import android.support.annotation.NonNull;
 
-import com.tonyostudio.popularmovies.model.Movie;
+import com.tonyostudio.popularmovies.R;
 import com.tonyostudio.popularmovies.model.MovieResults;
+import com.tonyostudio.popularmovies.model.ReviewResults;
+import com.tonyostudio.popularmovies.model.TrailerResults;
 
-import java.util.List;
+import java.io.IOException;
 
+import okhttp3.Cache;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 /**
@@ -24,264 +34,224 @@ import retrofit2.http.Query;
  * requires all network 'fetch' methods to provide a callback object
  * which is an instance of the inner interface called 'Callback'
  */
-public class MovieService {
-
-    public static final int  POSTER_IMAGE_RES_SIZE_180 = 185;
-    public static final int POSTER_IMAGE_RES_SIZE_780 = 780;
-    public static final int PAGE_MINIMUM = 1;
-
-    private static MovieResults sPopularMovieResults;
-    private static MovieResults sTopRatedMovieResults;
+public final class MovieService {
 
     private static MovieService sMovieService;
     private MovieServiceAPI mAPI;
+    private Context mContext;
 
-    private MovieService() {
+    private MovieService(Context context) {
+
+        mContext = context;
+
         mAPI = getDefaultRetrofitConfiguration()
                 .create(MovieServiceAPI.class);
     }
 
     /*Method used to access the single instance of MovieService*/
-    public static MovieService getInstance() {
+    public static void initialize(Application application) {
 
         if (sMovieService == null) {
-            sMovieService = new MovieService();
+            sMovieService = new MovieService(application);
         }
-
-        return sMovieService;
     }
 
-    private synchronized static MovieResults getPopularMovieResults() {
-        return sPopularMovieResults;
-    }
+    public static void fetchPopularMovieListAsync(@NonNull final Callback.MovieListCallback callback,int page) {
 
-    private synchronized static void setPopularMovieResults(MovieResults popularMovieResults) {
-        sPopularMovieResults = popularMovieResults;
-    }
+        sMovieService.mAPI.getPopularMovies(page).enqueue(new retrofit2.Callback<MovieResults>() {
+            @Override
+            public void onResponse(Call<MovieResults> call, Response<MovieResults> response) {
 
-    private synchronized static MovieResults getTopRatedMovieResults() {
-        return sTopRatedMovieResults;
-    }
-
-    private synchronized static void setTopRatedMovieResults(MovieResults topRatedMovieResults) {
-        sTopRatedMovieResults = topRatedMovieResults;
-    }
-
-    /*Method used to query the MovieService for a Movie object. This method searches the local
-     * database cache*/
-    public Movie fetchMovieWithId(int movieId) {
-
-        if (getPopularMovieResults() != null) {
-            for (Movie movie: getPopularMovieResults().getResults()) {
-
-                if (movie.getId() == movieId) {
-                    return movie;
+                if(response.isSuccessful()) {
+                    callback.onMovieDataLoaded(response.body());
+                } else {
+                    callback.onMovieDataLoaded(null);
                 }
             }
-        }
 
-        if (getTopRatedMovieResults() != null) {
-            for (Movie movie: getTopRatedMovieResults().getResults()) {
-
-                if (movie.getId() == movieId) {
-                    return movie;
-                }
+            @Override
+            public void onFailure(Call<MovieResults> call, Throwable t) {
+                callback.onMovieDataLoaded(null);
             }
-        }
-
-        return null;
+        });
     }
 
-    public void fetchPopularMovieListAsync(@NonNull Callback callback) {
-        fetchMovieListAsync(API.Popular,callback);
-    }
+    public static void fetchTopRatedMovieListAsync(@NonNull final Callback.MovieListCallback callback, int page) {
+        sMovieService.mAPI.getTopRatedMovies(page)
+                .enqueue(new retrofit2.Callback<MovieResults>() {
+                    @Override
+                    public void onResponse(Call<MovieResults> call, Response<MovieResults> response) {
 
-    public void fetchTopRatedMovieListAsync(@NonNull Callback callback) {
-        fetchMovieListAsync(API.TopRated,callback);
-    }
-
-    private void fetchMovieListAsync(API api,Callback callback) {
-
-        if (api == API.Popular) {
-            if (getPopularMovieResults() != null) {
-                callback.onDataLoaded(getPopularMovieResults().getResults());
-                return;
-            }
-
-            mAPI.getPopularMovies(PAGE_MINIMUM).enqueue(new CallbackBridge(api,callback));
-
-        } else if(API.TopRated == api) {
-            if (getTopRatedMovieResults() != null) {
-                callback.onDataLoaded(getTopRatedMovieResults().getResults());
-                return;
-            }
-
-            mAPI.getTopRatedMovies(PAGE_MINIMUM).enqueue(new CallbackBridge(api,callback));
-        }
-    }
-
-
-    public void fetchMoreFromPopularMovieListAsync(@NonNull Callback callback) {
-        fetchMoreFromMovieListAsync(API.Popular,callback);
-    }
-
-    public void fetchMoreFromTopRatedMovieListAsync(@NonNull Callback callback) {
-        fetchMoreFromMovieListAsync(API.TopRated,callback);
-    }
-
-    private void fetchMoreFromMovieListAsync(API api,Callback callback) {
-
-        if (api == API.Popular) {
-
-            /*No more pages to fetch. Return localDataSet*/
-            if (getPopularMovieResults().getPage() + 1 > getPopularMovieResults().getTotal_pages() ) {
-                fetchPopularMovieListAsync(callback);
-                return;
-            }
-
-            /*Fetch next page data*/
-            getPopularMovieResults().setPage(getPopularMovieResults().getPage() + 1);
-            mAPI.getPopularMovies(getPopularMovieResults().getPage())
-                    .enqueue(new CallbackBridge(API.Popular,callback));
-
-        }else if (api == API.TopRated) {
-
-            if (getTopRatedMovieResults().getPage() + 1 > getTopRatedMovieResults().getTotal_pages() ) {
-                fetchTopRatedMovieListAsync(callback);
-                return;
-            }
-
-            getTopRatedMovieResults().setPage(getTopRatedMovieResults().getPage() + 1);
-            mAPI.getTopRatedMovies(getTopRatedMovieResults().getPage())
-                    .enqueue(new CallbackBridge(API.TopRated,callback));
-        }
-    }
-
-    /*The Bridge class is used to pair the MovieService callback with
-     * a retrofit callback instance*/
-    private static class CallbackBridge implements retrofit2.Callback<MovieResults> {
-
-        private Callback mCallback;
-        private API mApi;
-
-        public CallbackBridge(API api,Callback callback) {
-            mCallback = callback;
-            mApi = api;
-        }
-
-        @Override
-        public void onResponse(Call<MovieResults> call, Response<MovieResults> response) {
-            if (response.isSuccessful() && response.body() != null) {
-
-                /*Retrieved movie data from the web service. Store this data
-                * and pass it to the callback method*/
-                switch (mApi) {
-
-                    case Popular: {
-
-                        if (getPopularMovieResults() == null) {
-                            setPopularMovieResults(response.body());
+                        if(response.isSuccessful()) {
+                            callback.onMovieDataLoaded(response.body());
                         } else {
-
-                            //A page fetch was done append data to current dataSet
-                            getPopularMovieResults().setPage(response.body().getPage());
-                            getPopularMovieResults().getResults().addAll(response.body().getResults());
+                            callback.onMovieDataLoaded(null);
                         }
-
-                        mCallback.onDataLoaded(getPopularMovieResults().getResults());
-                        break;
                     }
 
-                    case TopRated: {
-                        if (getTopRatedMovieResults() == null) {
-                            setTopRatedMovieResults(response.body());
-                        } else {
-
-                            //A page fetch was done append data to current dataSet
-                            getTopRatedMovieResults().setPage(response.body().getPage());
-                            getTopRatedMovieResults().getResults().addAll(response.body().getResults());
-                        }
-
-                        mCallback.onDataLoaded(getTopRatedMovieResults().getResults());
-
-                        break;
+                    @Override
+                    public void onFailure(Call<MovieResults> call, Throwable t) {
+                        callback.onMovieDataLoaded(null);
                     }
-                }
-
-            } else {
-
-                /*Return local data if fetch fails*/
-                returnLocalData();
-            }
-
-            destroyBridge();
-        }
-
-        @Override
-        public void onFailure(Call<MovieResults> call, Throwable t) {
-            returnLocalData();
-        }
-
-        private void returnLocalData() {
-
-            /*Return local data if fetch fails*/
-            if (mApi == API.Popular) {
-                mCallback.onDataLoaded(getPopularMovieResults().getResults());
-            } else if (mApi == API.TopRated) {
-                mCallback.onDataLoaded(getTopRatedMovieResults().getResults());
-            }
-        }
-
-        /*Perform cleanup after data is passed to the callback*/
-        private void destroyBridge() {
-            mCallback = null;
-            mApi = null;
-        }
+                });
     }
 
-    /*Interface that should be implemented by the object
+    public static void fetchTrailersListAsync(String movieId,@NonNull final Callback.TrailerListCallback callback) {
+
+        sMovieService.mAPI.getMovieTrailers(movieId).enqueue(new retrofit2.Callback<TrailerResults>() {
+            @Override
+            public void onResponse(Call<TrailerResults> call, Response<TrailerResults> response) {
+
+                if (response.isSuccessful()) {
+                    callback.onTrailerDataLoaded(response.body());
+                } else {
+                    callback.onTrailerDataLoaded(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TrailerResults> call, Throwable t) {
+                callback.onTrailerDataLoaded(null);
+            }
+        });
+    }
+
+    public static void fetchMovieReviewsListAsync(String movieId, final Callback.ReviewListCallback callback) {
+
+        sMovieService.mAPI.getMovieReviews(movieId).enqueue(new retrofit2.Callback<ReviewResults>() {
+            @Override
+            public void onResponse(Call<ReviewResults> call, Response<ReviewResults> response) {
+
+                if (response.isSuccessful()) {
+                    callback.onReviewDataLoaded(response.body());
+                } else {
+                    callback.onReviewDataLoaded(null);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ReviewResults> call, Throwable t) {
+                callback.onReviewDataLoaded(null);
+            }
+        });
+    }
+
+    /* Callback Interfaces that should be implemented by the object
     * fetching data from the MovieService*/
-    public interface Callback {
-        void onDataLoaded(List<Movie> movieList);
+    public static class Callback {
+
+        public interface MovieListCallback {
+            void onMovieDataLoaded(MovieResults movieResults);
+        }
+
+        public interface TrailerListCallback {
+            void onTrailerDataLoaded(TrailerResults trailerResults);
+        }
+
+        public interface ReviewListCallback {
+            void onReviewDataLoaded(ReviewResults reviewResults);
+        }
     }
 
-    /*This method returns the full url path of the movie poster image*/
-    public static String getImageUrlString(String imageName,boolean highRes) {
+    /*This method returns the full url path of the movie poster
+    * image depending on which quality*/
+    public static String getImageUrlString(String imageName) {
+
+        /*Fetch Movie Poster based on device resolution*/
+        boolean highRes;
+
+        final int imageWidth = sMovieService.mContext.getResources().getInteger(R.integer.default_image_width);
+
+        if (imageWidth == MovieServiceAPI.POSTER_IMAGE_RES_SIZE_780) {
+            highRes = true;
+        }else {
+            highRes = false;
+        }
 
         if (highRes) {
-            return MovieServiceAPI.BASE_IMAGE_API + "w" + POSTER_IMAGE_RES_SIZE_780 + "/" + imageName;
+            return MovieServiceAPI.BASE_IMAGE_API + "w" + MovieServiceAPI.POSTER_IMAGE_RES_SIZE_780 + "/" + imageName;
         }
 
-        return MovieServiceAPI.BASE_IMAGE_API + "w" + POSTER_IMAGE_RES_SIZE_180 + "/" + imageName;
+        return MovieServiceAPI.BASE_IMAGE_API + "w" + MovieServiceAPI.POSTER_IMAGE_RES_SIZE_180 + "/" + imageName;
+    }
+
+    /*Method used to get the trailers URL*/
+    public static String getTrailerUrlString(String key) {
+        return MovieServiceAPI.BASE_TRAILER_URL + key;
     }
 
     /*Get a configured retrofit instance that will be
     * used to communicate with the movie web service*/
     private Retrofit getDefaultRetrofitConfiguration() {
-        return  new Retrofit.Builder()
+        return new Retrofit.Builder()
+//                .client(getOkHttpCacheClient())
                 .baseUrl(MovieServiceAPI.BASE_API)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
 
-    /*enum used to make clear which movie service API is being used*/
-    private enum API {
-        Popular,
-        TopRated
+
+    /**Get a configured OkHttpClient instance that supports local
+     * caching of network requests.*/
+    private OkHttpClient getOkHttpCacheClient() {
+        return new OkHttpClient.Builder()
+                .cache(new Cache(mContext.getExternalCacheDir(),MovieServiceAPI.API_CACHE_SIZE))
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public okhttp3.Response intercept(Chain chain) throws IOException {
+                        Request request = chain.request();
+
+                        if(isNetworkAvailable()) {
+
+                            //If the network is available fetch new data every 5 mins from the network
+                            // otherwise use the local cache to fetch the last request.
+                            request = request.newBuilder()
+                                    .header("Cache-Control","public, max-age=" + 300)
+                                    .build();
+                        } else {
+
+                            //If the network is not available used the last cached request up
+                            // to 7 days ago
+                            request = request.newBuilder()
+                                    .header("Cache-Control","public, only-if-cached, max-stale="+ 60*60*24*7)
+                                    .build();
+                        }
+
+                        return chain.proceed(request);
+                    }
+                })
+                .build();
     }
+
+    /**Method used to determine if the device is connected to a network*/
+    private boolean isNetworkAvailable() {
+        final ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null;
+    }
+
+
 
     /*The API interface is used by the retrofit library
     * to make network API calls to the movie web api service*/
     private interface MovieServiceAPI{
         String BASE_API = "https://api.themoviedb.org/";
-        String BASE_IMAGE_API ="http://image.tmdb.org/t/p/";
-        String API_KEY = APIKEY; //Replace with API_KEY
-
+        String BASE_IMAGE_API = "http://image.tmdb.org/t/p/";
+        String API_KEY = ""; //TODO: API KEY HERE
+        String BASE_TRAILER_URL = "https://www.youtube.com/watch?v=";
+        int  POSTER_IMAGE_RES_SIZE_180 = 185;
+        int POSTER_IMAGE_RES_SIZE_780 = 780;
+        int API_CACHE_SIZE = 10 * 1024 * 1024;
 
         @GET("/3/movie/popular?&api_key="+API_KEY)
         Call<MovieResults> getPopularMovies(@Query("page") int page);
 
         @GET("/3/movie/top_rated?&api_key="+API_KEY)
         Call<MovieResults> getTopRatedMovies(@Query("page") int page);
+
+        @GET("/3/movie/{id}/videos?&api_key="+API_KEY)
+        Call<TrailerResults>getMovieTrailers(@Path("id") String id);
+
+        @GET("/3/movie/{id}/reviews?&api_key="+API_KEY)
+        Call<ReviewResults>getMovieReviews(@Path("id") String id);
     }
 }

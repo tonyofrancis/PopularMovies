@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 
+import com.tonyostudio.popularmovies.api.AppCache;
 import com.tonyostudio.popularmovies.fragment.MovieDetailFragment;
+import com.tonyostudio.popularmovies.model.Movie;
+
 
 /**
  * Created by tonyofrancis on 3/23/16.
@@ -12,24 +15,20 @@ import com.tonyostudio.popularmovies.fragment.MovieDetailFragment;
  * This activity displays the details of the
  * selected movie.
  */
-public class MovieDetailActivity extends SingleFragmentActivity implements
+public final class MovieDetailActivity extends SingleFragmentActivity implements
         MovieDetailFragment.Callback {
 
     private static final String EXTRA_MOVIE_ID = "com.tonyostudio.popularmovies.extra_movie_id";
 
     protected Fragment createFragment() {
-        return MovieDetailFragment.newInstance(getIntent().getIntExtra(EXTRA_MOVIE_ID,0));
+        return MovieDetailFragment.newInstance((Movie) AppCache.retrieve(EXTRA_MOVIE_ID));
     }
 
-    /*Create an intent that will launch an instance of MovieDetailActivity
-     * and also pass it an extra for the movieId selected*/
-    public static Intent newIntent(Context applicationContext, int movieId) {
+    public static Intent newIntent(Context context, Movie movie) {
 
-        Intent intent = new Intent(applicationContext,MovieDetailActivity.class);
-        intent.putExtra(EXTRA_MOVIE_ID,movieId);
+        AppCache.store(EXTRA_MOVIE_ID,movie);
 
-        return intent;
-
+        return new Intent(context,MovieDetailActivity.class);
     }
 
     @Override

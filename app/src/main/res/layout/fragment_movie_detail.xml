@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:background="@color/offWhite"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            xmlns:tools="http://schemas.android.com/tools">
+              android:background="@color/offWhite"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
 
         <LinearLayout
             android:orientation="horizontal"
@@ -18,7 +19,7 @@
 
             <ImageView
                 android:id="@+id/movie_poster_image_view"
-                android:layout_marginRight="10dp"
+                android:layout_marginRight="@dimen/ten_dp"
                 android:layout_width="@dimen/poster_width"
                 android:layout_height="@dimen/poster_height"/>
 
@@ -50,17 +51,64 @@
                     android:layout_height="wrap_content"
                     tools:text="8/10"/>
 
+                <CheckBox
+                    android:id="@+id/movie_favorite_button"
+                    android:layout_marginTop="20dp"
+                    android:button="@drawable/favorite_button_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+
             </LinearLayout>
 
         </LinearLayout>
 
         <TextView
-            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:textColor="@android:color/black"
             android:id="@+id/movie_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Movie description"/>
+
+        <TextView
+            android:id="@+id/show_reviews_text_view"
+            android:textColor="@color/colorAccent"
+            android:layout_gravity="center"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:text="@string/show_all_reviews_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:id="@+id/trailer_wrapper_view"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                style="@style/HeaderLabel"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:text="@string/trailer_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/trailer_recycler_view"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/activity_horizontal_margin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

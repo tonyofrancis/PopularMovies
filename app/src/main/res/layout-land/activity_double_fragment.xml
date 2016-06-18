@@ -10,13 +10,13 @@
 
     <FrameLayout
         android:id="@+id/fragment_container"
-        android:layout_weight="47"
+        android:layout_weight="40"
         android:layout_width="0dp"
         android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/detail_container"
-        android:layout_weight="53"
+        android:layout_weight="60"
         android:layout_width="0dp"
         android:layout_height="match_parent" />
 

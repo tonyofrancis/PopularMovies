@@ -1,6 +1,5 @@
 package com.tonyostudio.popularmovies.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,8 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tonyostudio.popularmovies.R;
+import com.tonyostudio.popularmovies.Utils.SpacesItemDecoration;
 import com.tonyostudio.popularmovies.adapter.MovieListAdapter;
 import com.tonyostudio.popularmovies.api.MovieService;
+import com.tonyostudio.popularmovies.model.Movie;
 
 /**
  * Created by tonyofrancis on 3/31/16.
@@ -21,24 +22,36 @@ import com.tonyostudio.popularmovies.api.MovieService;
  * This class prepares the recyclerView, LayoutManager
  * and adapter
  */
-public abstract class MovieListBaseFragment extends Fragment
-        implements MovieService.Callback {
+public abstract class MovieListBaseFragment extends Fragment implements MovieService.Callback.MovieListCallback{
 
-    private String mTitle;
     private RecyclerView mMovieListRecyclerView;
     private MovieListAdapter mMovieListAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private int currentPage;
+
+    public abstract String getFragmentId();
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        currentPage = 1;
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        super.onCreateView(inflater,container,savedInstanceState);
 
         /*Inflate and initialize the fragment's view*/
-        View view = inflater.inflate(R.layout.fragment_movie_list,container,false);
+        final View view = inflater.inflate(R.layout.fragment_movie_list,container,false);
         mMovieListRecyclerView = (RecyclerView) view.findViewById(R.id.movie_list_recycler_view);
 
         /*Set the recyclerView LayoutManager */
         mMovieListRecyclerView.setLayoutManager(mLayoutManager);
+
+        final int posterSpacing = getResources().getDimensionPixelOffset(R.dimen.default_poster_spacing);
+        mMovieListRecyclerView.addItemDecoration(new SpacesItemDecoration(posterSpacing));
 
         /*Setup RecyclerView Adapter*/
         mMovieListAdapter = new MovieListAdapter(getActivity());
@@ -47,20 +60,9 @@ public abstract class MovieListBaseFragment extends Fragment
         return view;
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (!(context instanceof Callback)) {
-
-            throw new ClassCastException("Context must implement the MovieListBaseFragment.Callback " +
-                    "interface.");
-        }
-    }
-
     /*Callback which needs to be implemented by the hosting Activity*/
     public interface Callback {
-        void onMovieItemSelected(int id);
+        void onMovieItemSelected(Movie movie);
     }
 
     /*Setters & Getters that Sub Classes can use*/
@@ -76,14 +78,11 @@ public abstract class MovieListBaseFragment extends Fragment
         mLayoutManager = layoutManager;
     }
 
-    public RecyclerView.LayoutManager getLayoutManager() {
-        return mLayoutManager;
+    public int getCurrentPage() {
+        return currentPage;
     }
 
-    /*Method used to get the title of the List*/
-    public String getTitle(){return mTitle;}
-
-    public void setTitle(String title) {
-        mTitle = title;
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 }

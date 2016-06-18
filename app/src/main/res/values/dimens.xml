@@ -4,5 +4,9 @@
     <dimen name="poster_width">185dp</dimen>
     <dimen name="poster_height">277dp</dimen>
     <dimen name="default_poster_spacing">5dp</dimen>
+    <dimen name="default_trailer_width">150dp</dimen>
+    <dimen name="ten_dp">10dp</dimen>
+    <dimen name="twenty_dp">20dp</dimen>
+    <dimen name="one_hundred_dp">100dp</dimen>
     
 </resources>

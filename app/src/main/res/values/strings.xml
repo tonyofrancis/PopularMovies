@@ -1,7 +1,13 @@
 <resources>
     <string name="app_name">Popular Movies</string>
 
-    <string name="most_popular">Popular Movies</string>
-    <string name="top_rated">Top Rated Movies</string>
+    <string name="most_popular_label">Popular Movies</string>
+    <string name="top_rated_label">Top Rated Movies</string>
     <string name="rating_string">%.1f/10</string>
+    <string name="review_label">Reviews</string>
+    <string name="trailer_label">Trailers</string>
+    <string name="favorite_label">Favorites</string>
+    <string name="show_all_reviews_label">see reviews</string>
+    <string name="no_movie_review_label">no reviews</string>
+    <string name="loading_movie_review_label">loading reviews...</string>
 </resources>

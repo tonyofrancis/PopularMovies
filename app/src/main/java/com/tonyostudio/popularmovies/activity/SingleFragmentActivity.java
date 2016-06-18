@@ -23,12 +23,11 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
 
         /*Commit a new instance of fragment and add it to
         * the Activity when it is created*/
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment fragment = fragmentManager.findFragmentById(R.id.fragment_container);
+        final FragmentManager fragmentManager = getSupportFragmentManager();
 
-        if (fragment == null) {
+        if (fragmentManager.findFragmentById(R.id.fragment_container) == null) {
             fragmentManager.beginTransaction()
-                    .add(R.id.fragment_container,createFragment())
+                    .add(R.id.fragment_container, createFragment())
                     .commit();
         }
     }
