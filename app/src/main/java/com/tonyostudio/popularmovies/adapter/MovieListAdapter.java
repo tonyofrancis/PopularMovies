@@ -1,7 +1,5 @@
 package com.tonyostudio.popularmovies.adapter;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,22 +26,21 @@ import java.util.List;
 public final class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapter.MovieItemViewHolder> {
 
     private List<Movie> mDataSet;
-    private Context mContext;
+    private final MovieListBaseFragment.Callback mCallback;
 
-    public MovieListAdapter(Context context) {
-        mContext = context;
+    public MovieListAdapter(MovieListBaseFragment.Callback callback) {
         mDataSet = new ArrayList<>();
-
+        mCallback = callback;
     }
 
     @Override
     public MovieItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MovieItemViewHolder(LayoutInflater.from(mContext).inflate(R.layout.movie_poster_item,parent,false));
+        return new MovieItemViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.movie_poster_item,parent,false));
     }
 
     @Override
     public void onBindViewHolder(MovieItemViewHolder holder, int position) {
-        holder.bindMovieItem(mDataSet.get(position));
+        holder.bindMovieItem(mDataSet.get(position),mCallback);
     }
 
     @Override
@@ -81,32 +78,30 @@ public final class MovieListAdapter extends RecyclerView.Adapter<MovieListAdapte
     }
 
     /*ViewHolder class used to populate RecyclerView*/
-    public static class MovieItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class MovieItemViewHolder extends RecyclerView.ViewHolder {
 
         final private ImageView mImageView;
-        private Movie mMovie;
 
         public MovieItemViewHolder(View itemView) {
             super(itemView);
 
             mImageView = (ImageView) itemView.findViewById(R.id.movie_poster_image_view);
-            itemView.setOnClickListener(this);
         }
 
-        public void bindMovieItem(Movie movie) {
-             mMovie= movie;
+        public void bindMovieItem(final Movie movie,final MovieListBaseFragment.Callback callback) {
+
 
             Picasso.with(mImageView.getContext())
                     .load(MovieService.getImageUrlString(movie.getPoster_path()))
                     .placeholder(R.drawable.poster_placeholder)
                     .into(mImageView);
-        }
 
-        @Override
-        public void onClick(View v) {
-
-            ((MovieListBaseFragment.Callback)((ContextWrapper)v.getContext())
-                    .getBaseContext()).onMovieItemSelected(mMovie);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                 callback.onMovieItemSelected(movie);
+                }
+            });
         }
     }
 }

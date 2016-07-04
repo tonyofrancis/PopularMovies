@@ -53,6 +53,18 @@ public final class FavoriteMovieListFragment extends MovieListBaseFragment imple
     }
 
     @Override
+    protected Callback getCallback() {
+        return mCallback;
+    }
+
+    private Callback mCallback = new Callback() {
+        @Override
+        public void onMovieItemSelected(Movie movie) {
+
+        }
+    };
+
+    @Override
     public void onDataLoaded(List<Movie> movies) {
         getAdapter().swapDataSet(movies);
     }

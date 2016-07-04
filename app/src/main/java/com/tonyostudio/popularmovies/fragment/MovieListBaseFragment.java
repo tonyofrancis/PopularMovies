@@ -54,16 +54,20 @@ public abstract class MovieListBaseFragment extends Fragment implements MovieSer
         mMovieListRecyclerView.addItemDecoration(new SpacesItemDecoration(posterSpacing));
 
         /*Setup RecyclerView Adapter*/
-        mMovieListAdapter = new MovieListAdapter(getActivity());
+        mMovieListAdapter = new MovieListAdapter(getCallback());
         mMovieListRecyclerView.setAdapter(mMovieListAdapter);
 
         return view;
     }
 
+    protected abstract Callback getCallback();
+
+
     /*Callback which needs to be implemented by the hosting Activity*/
     public interface Callback {
         void onMovieItemSelected(Movie movie);
     }
+
 
     /*Setters & Getters that Sub Classes can use*/
     public RecyclerView getRecyclerView() {

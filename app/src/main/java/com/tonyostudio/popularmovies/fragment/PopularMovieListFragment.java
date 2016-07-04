@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.tonyostudio.popularmovies.R;
+import com.tonyostudio.popularmovies.activity.MovieDetailActivity;
 import com.tonyostudio.popularmovies.api.AppCache;
 import com.tonyostudio.popularmovies.api.MovieService;
 import com.tonyostudio.popularmovies.model.Movie;
@@ -84,6 +85,18 @@ public final class PopularMovieListFragment extends MovieListBaseFragment {
 
         AppCache.store(getFragmentId(),getAdapter().getDataSet());
     }
+
+    @Override
+    protected Callback getCallback() {
+        return mCallback;
+    }
+
+    private Callback mCallback = new Callback() {
+        @Override
+        public void onMovieItemSelected(Movie movie) {
+            startActivity(MovieDetailActivity.newIntent(getActivity(),movie));
+        }
+    };
 
     @Override
     public void onMovieDataLoaded(MovieResults movieResults) {
